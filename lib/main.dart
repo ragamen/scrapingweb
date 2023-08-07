@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/dom.dart' as dom;
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'articulos.dart';
@@ -89,10 +90,10 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       final response = await http.get(url);
       dom.Document html = dom.Document.html(response.body);
-      final numero = html
+      /*  final numero = html
           .querySelectorAll('h4 > small')
           .map((element) => element.innerHtml.trim())
-          .toList();
+          .toList();*/
       final nombre = html
           .querySelectorAll(' > span.info')
           .map((element) => element.innerHtml.trim())
@@ -107,31 +108,34 @@ class _MyHomePageState extends State<MyHomePage> {
           .map((element) => element.attributes['src']!)
           .toList();
       urlimage.remove('/assets/images/investment/thumb-min.webp');
-      print(urlimage.length);
       setState(() {
+        final xxfecha = DateTime.now();
+        final formato = DateFormat('dd/MM/yyyy');
+        final fechaFormateada = formato.format(xxfecha);
+        var xFecha = fechaFormateada;
+
         articulos = List.generate(
             nombre.length,
             (index) => Articulos(
                   operador: hora[index].substring(5, hora[index].length).trim(),
                   numero: '',
                   urlimage: urlimage[index],
-                  nombre: nombre[index],
+//                  nombre: nombre[index],
+                  nombre:
+                      nombre[index].substring(nombre[index].indexOf(' ') + 1),
                   hora: hora[index].substring(0, 5).trim(),
-                  fecha: DateTime.now().toString().substring(0, 10),
+                  fecha: xFecha,
                 ));
         var contx = articulos.length;
 
         for (var index = 0; index < contx; index++) {
           var xgan = articulos[index];
-          if (xgan.operador.trim() == "Guacharo Activo") {
-            print(xgan.hora.trim());
-          }
           String xoper = xgan.operador.trim();
-          String xnumero = xgan.numero;
-          String xima = xgan.urlimage;
+//          String xnumero = xgan.numero;
+//          String xima = xgan.urlimage;
           String xnomb = xgan.nombre;
           String xhora = xgan.hora.trim();
-          String xfecha = xgan.fecha.trim();
+//          String xfecha = xFecha;
 
           var contx1 = Lista.operadores.length;
           for (var i = 0; i < contx1; i++) {
@@ -150,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
           String xima = xgan.urlimage;
           String xnomb = xgan.nombre;
           String xhora = xgan.hora;
-          String xfecha = xgan.fecha;
+          String xfecha = xFecha;
 
           insertarGanador(xoper, xnumero, xima, xnomb, xhora, xfecha);
         }
@@ -177,13 +181,15 @@ class _MyHomePageState extends State<MyHomePage> {
         'fecha': xfecha
       });
     } catch (e) {
-      print(e);
+      // comentario
     }
   }
 
   limpiarganador() async {
-    var fec = DateTime.now().toString().substring(0, 10);
-    print(fec);
+    final fecha = DateTime.now();
+    final formato = DateFormat('dd/MM/yyyy');
+    final fechaFormateada = formato.format(fecha);
+    var fec = fechaFormateada;
     await cliente.from('loterias').delete().eq('fecha', fec);
   }
 }
